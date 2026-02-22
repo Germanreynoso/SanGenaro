@@ -1054,12 +1054,28 @@ const App = () => {
               </div>
 
               {!isNewPatient ? (
-                <Select
-                  label="Seleccionar Paciente"
-                  value={newReportMeta.patientId}
-                  onChange={e => setNewReportMeta({ ...newReportMeta, patientId: e.target.value })}
-                  options={[{ value: '', label: 'Seleccione...' }, ...patients.map(p => ({ value: p.id, label: `${p.name} (DNI: ${p.dni || 'S/D'})` }))]}
-                />
+                <>
+                  <Select
+                    label="Seleccionar Paciente"
+                    value={newReportMeta.patientId}
+                    onChange={e => setNewReportMeta({ ...newReportMeta, patientId: e.target.value })}
+                    options={[{ value: '', label: 'Seleccione...' }, ...patients.map(p => ({ value: p.id, label: `${p.name} (DNI: ${p.dni || 'S/D'})` }))]}
+                  />
+                  {newReportMeta.patientId && (() => {
+                    const p = patients.find(x => x.id === newReportMeta.patientId);
+                    if (!p) return null;
+                    const room = rooms.find(r => r.id === p.room_id);
+                    return (
+                      <div className="mt-3 p-4 bg-blue-50 rounded-lg border border-blue-100 text-sm space-y-1">
+                        <p><strong>Nombre:</strong> {p.name}</p>
+                        <p><strong>DNI:</strong> {p.dni || 'No registrado'}</p>
+                        <p><strong>Obra Social:</strong> {p.social_security || 'No registrada'}</p>
+                        <p><strong>Diagnostico:</strong> {p.diagnosis || 'No registrado'}</p>
+                        <p><strong>Sala:</strong> {room?.name || 'Sin asignar'}</p>
+                      </div>
+                    );
+                  })()}
+                </>
               ) : (
                 <div className="space-y-4 p-4 bg-teal-50 rounded-lg border border-teal-100">
                   <Input label="Nombre Completo" value={tempPatient.name} onChange={e => setTempPatient({ ...tempPatient, name: e.target.value })} />
@@ -1115,6 +1131,12 @@ const App = () => {
             </div>
             <div className="p-6 flex-1 overflow-y-auto bg-gray-50/50">
               <div className="max-w-4xl mx-auto bg-white p-8 rounded shadow-sm min-h-full">
+                <div className="mb-6 p-4 bg-gray-50 rounded-lg border grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                  <div><span className="text-gray-500 block text-xs">Paciente</span><strong>{currentReport.patientName || '-'}</strong></div>
+                  <div><span className="text-gray-500 block text-xs">DNI</span><strong>{currentReport.patientDni || '-'}</strong></div>
+                  <div><span className="text-gray-500 block text-xs">Obra Social</span><strong>{currentReport.socialSecurity || '-'}</strong></div>
+                  <div><span className="text-gray-500 block text-xs">Diagnostico</span><strong>{currentReport.patientDiagnosis || '-'}</strong></div>
+                </div>
                 {currentReport.type === 'EVOLUCION' && <FormEvolucion data={currentReport.content} onChange={(key, val) => setCurrentReport(prev => ({ ...prev, content: { ...prev.content, [key]: val } }))} userRole={appUser.role} />}
                 {currentReport.type === 'ADMISION' && <FormAdmision data={currentReport.content} onChange={(key, val) => setCurrentReport(prev => ({ ...prev, content: { ...prev.content, [key]: val } }))} userRole={appUser.role} />}
                 {currentReport.type === 'SEMESTRAL' && <FormSemestral data={currentReport.content} onChange={(key, val) => setCurrentReport(prev => ({ ...prev, content: { ...prev.content, [key]: val } }))} userRole={appUser.role} />}
