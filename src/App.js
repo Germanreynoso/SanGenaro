@@ -125,6 +125,7 @@ const FileViewer = ({ folderId }) => {
     setLoading(false);
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchFiles(); }, [folderId]);
 
   return (
@@ -855,24 +856,24 @@ const App = () => {
                 };
 
                 const nombre = extractField(docText, [
-                  /(?:nombre\s*(?:y\s*apellido|completo)?)\s*[:\-]\s*(.+)/i,
-                  /(?:apellido\s*y\s*nombre)\s*[:\-]\s*(.+)/i,
-                  /(?:paciente)\s*[:\-]\s*(.+)/i
+                  /(?:nombre\s*(?:y\s*apellido|completo)?)\s*[:|-]\s*(.+)/i,
+                  /(?:apellido\s*y\s*nombre)\s*[:|-]\s*(.+)/i,
+                  /(?:paciente)\s*[:|-]\s*(.+)/i
                 ]) || file.name.replace(/\.(docx?|pdf|xlsx?)$/i, '').trim();
 
                 const dni = extractField(docText, [
-                  /(?:d\.?n\.?i\.?|documento)\s*[:\-\s]\s*([\d.]+)/i,
-                  /(?:n[°ºo]?\s*(?:de\s*)?(?:doc|documento))\s*[:\-]\s*([\d.]+)/i
+                  /(?:d\.?n\.?i\.?|documento)\s*[:|\-\s]\s*([\d.]+)/i,
+                  /(?:n[°ºo]?\s*(?:de\s*)?(?:doc|documento))\s*[:|-]\s*([\d.]+)/i
                 ]);
 
                 const obraSocial = extractField(docText, [
-                  /(?:obra\s*social|prepaga|cobertura)\s*[:\-]\s*(.+)/i,
-                  /(?:o\.?\s*s\.?)\s*[:\-]\s*(.+)/i
+                  /(?:obra\s*social|prepaga|cobertura)\s*[:|-]\s*(.+)/i,
+                  /(?:o\.?\s*s\.?)\s*[:|-]\s*(.+)/i
                 ]);
 
                 const diagnostico = extractField(docText, [
-                  /(?:diagn[oó]stico|dx)\s*[:\-]\s*(.+)/i,
-                  /(?:motivo\s*de\s*(?:internaci[oó]n|ingreso|consulta))\s*[:\-]\s*(.+)/i
+                  /(?:diagn[oó]stico|dx)\s*[:|-]\s*(.+)/i,
+                  /(?:motivo\s*de\s*(?:internaci[oó]n|ingreso|consulta))\s*[:|-]\s*(.+)/i
                 ]);
 
                 if (nombre) {
