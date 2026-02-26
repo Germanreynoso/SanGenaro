@@ -612,6 +612,7 @@ const App = () => {
   const [newReportMeta, setNewReportMeta] = useState({
     patientId: '', type: 'EVOLUCION'
   });
+  const [selectedType, setSelectedType] = useState('ALL');
   const [isNewPatient, setIsNewPatient] = useState(false);
   const [tempPatient, setTempPatient] = useState({ name: '', dni: '', dob: '', socialSecurity: '', diagnosis: '', room_id: '' });
 
@@ -910,9 +911,13 @@ const App = () => {
   };
 
   const filteredReports = useMemo(() => {
-    if (!filterText) return reports;
+    let filtered = reports;
+    if (selectedType !== 'ALL') {
+      filtered = filtered.filter(r => r.type === selectedType);
+    }
+    if (!filterText) return filtered;
     const lower = filterText.toLowerCase();
-    return reports.filter(r => {
+    return filtered.filter(r => {
       const patient = patients.find(p => p.id === r.patient_id);
       const roomName = patient ? (rooms.find(rm => rm.id === patient.room_id)?.name || '') : '';
       return (
@@ -925,7 +930,7 @@ const App = () => {
         roomName.toLowerCase().includes(lower)
       );
     });
-  }, [reports, filterText, patients, rooms]);
+  }, [reports, filterText, selectedType, patients, rooms]);
 
 
   if (showPrint && currentReport) return <PrintView report={currentReport} onClose={() => setShowPrint(false)} />;
@@ -1006,6 +1011,40 @@ const App = () => {
               </div>
               <Button onClick={() => setView('create')}><Plus size={18} /> Nuevo Informe</Button>
             </div>
+
+            {/* Filtros por Tipo de Informe */}
+            <div className="flex flex-wrap gap-2 pb-2 overflow-x-auto">
+              <button
+                onClick={() => setSelectedType('ALL')}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedType === 'ALL' ? 'bg-teal-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:border-teal-300'}`}
+              >
+                Todos
+              </button>
+              <button
+                onClick={() => setSelectedType('EVOLUCION')}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${selectedType === 'EVOLUCION' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:border-blue-300'}`}
+              >
+                Bimestral
+              </button>
+              <button
+                onClick={() => setSelectedType('ADMISION')}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${selectedType === 'ADMISION' ? 'bg-purple-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:border-purple-300'}`}
+              >
+                Admisión
+              </button>
+              <button
+                onClick={() => setSelectedType('SEMESTRAL')}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${selectedType === 'SEMESTRAL' ? 'bg-emerald-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:border-emerald-300'}`}
+              >
+                Semestral
+              </button>
+              <button
+                onClick={() => setSelectedType('PLANIFICACION')}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${selectedType === 'PLANIFICACION' ? 'bg-amber-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:border-amber-300'}`}
+              >
+                Planificación
+              </button>
+            </div>
             <div className="grid gap-4">
               {filteredReports.length === 0 ? (
                 <div className="text-center py-12 text-gray-400">
@@ -1016,8 +1055,15 @@ const App = () => {
                 filteredReports.map(report => (
                   <div key={report.id} className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div className="flex gap-4">
-                      <div className={`p-3 rounded-full h-fit ${report.type === 'EVOLUCION' ? 'bg-blue-100 text-blue-600' : report.type === 'ADMISION' ? 'bg-purple-100 text-purple-600' : 'bg-green-100 text-green-600'}`}>
-                        <FileText size={24} />
+                      <div className={`p-3 rounded-full h-fit ${report.type === 'EVOLUCION' ? 'bg-blue-100 text-blue-600' :
+                          report.type === 'ADMISION' ? 'bg-purple-100 text-purple-600' :
+                            report.type === 'SEMESTRAL' ? 'bg-emerald-100 text-emerald-600' :
+                              'bg-amber-100 text-amber-600'
+                        }`}>
+                        {report.type === 'EVOLUCION' ? <Activity size={24} /> :
+                          report.type === 'ADMISION' ? <Plus size={24} /> :
+                            report.type === 'SEMESTRAL' ? <FileText size={24} /> :
+                              <Sparkles size={24} />}
                       </div>
                       <div>
                         <h3 className="font-bold text-gray-800">{report.patients?.name || report.patientName}</h3>
@@ -1096,13 +1142,30 @@ const App = () => {
                 </div>
               )}
 
-              <div className="border-t pt-4">
-                <Select
-                  label="Tipo de Formulario"
-                  value={newReportMeta.type}
-                  onChange={e => setNewReportMeta({ ...newReportMeta, type: e.target.value })}
-                  options={Object.entries(FORM_TYPES).map(([k, v]) => ({ value: k, label: v }))}
-                />
+              <div className="border-t pt-6">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-3">Tipo de Informe</label>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { id: 'EVOLUCION', label: 'Bimestral', activeClass: 'border-blue-500 bg-blue-50 text-blue-700', iconClass: 'bg-blue-100 text-blue-600', icon: <Activity size={24} /> },
+                    { id: 'ADMISION', label: 'Admisión', activeClass: 'border-purple-500 bg-purple-50 text-purple-700', iconClass: 'bg-purple-100 text-purple-600', icon: <Plus size={24} /> },
+                    { id: 'SEMESTRAL', label: 'Semestral', activeClass: 'border-emerald-500 bg-emerald-50 text-emerald-700', iconClass: 'bg-emerald-100 text-emerald-600', icon: <FileText size={24} /> },
+                    { id: 'PLANIFICACION', label: 'Planificación', activeClass: 'border-amber-500 bg-amber-50 text-amber-700', iconClass: 'bg-amber-100 text-amber-600', icon: <Sparkles size={24} /> },
+                  ].map(type => (
+                    <button
+                      key={type.id}
+                      onClick={() => setNewReportMeta({ ...newReportMeta, type: type.id })}
+                      className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${newReportMeta.type === type.id
+                        ? type.activeClass
+                        : 'border-gray-100 bg-gray-50 text-gray-400 hover:border-gray-200'
+                        }`}
+                    >
+                      <div className={`p-2 rounded-full ${newReportMeta.type === type.id ? type.iconClass : 'bg-gray-200 text-gray-400'}`}>
+                        {type.icon}
+                      </div>
+                      <span className="font-bold text-sm">{type.label}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div className="pt-4 flex gap-3">
